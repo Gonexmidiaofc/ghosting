@@ -14,7 +14,8 @@ import {
   Sparkles,
   Shield,
   Users,
-  User
+  User,
+  Lock
 } from "lucide-react"
 import type { User } from "@supabase/supabase-js"
 
@@ -32,10 +33,10 @@ interface AppSidebarProps {
 
 const navigation = [
   { name: "Dashboard", href: "/app", icon: LayoutDashboard },
-  { name: "Modulos", href: "/app/modulos", icon: BookOpen },
+  { name: "Modulos", href: "/app/modulos", icon: BookOpen, locked: true },
   { name: "Ofertas Escaladas", href: "/app/ofertas-escaladas", icon: Sparkles },
-  { name: "Workspace", href: "/app/workspace", icon: FolderKanban },
-  { name: "Ghost AI", href: "/app/ghost-ai", icon: Sparkles },
+  { name: "Workspace", href: "/app/workspace", icon: FolderKanban, locked: true },
+  { name: "Ghost AI", href: "/app/ghost-ai", icon: Sparkles, locked: true },
   { name: "Comunidade", href: "/app/comunidade", icon: Users },
   { name: "Perfil", href: "/app/perfil", icon: User },
   { name: "Configuracoes", href: "/app/configuracoes", icon: Settings },
@@ -86,6 +87,22 @@ export function AppSidebar({ profile }: AppSidebarProps) {
           const isActive = pathname === item.href || 
             (item.href !== "/app" && pathname.startsWith(item.href))
           
+          if (item.locked) {
+            return (
+              <div
+                key={item.name}
+                className="flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground opacity-60 cursor-not-allowed bg-secondary/10"
+                title="Em breve"
+              >
+                <div className="flex items-center gap-3">
+                  <item.icon className="w-5 h-5" />
+                  {item.name}
+                </div>
+                <Lock className="w-4 h-4 text-muted-foreground/50" />
+              </div>
+            )
+          }
+
           return (
             <Link
               key={item.name}
