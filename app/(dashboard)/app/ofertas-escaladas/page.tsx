@@ -131,12 +131,10 @@ export default function OfertasEscaladasPage() {
               
               <Button 
                 className="w-full bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground transition-colors"
-                asChild
+                onClick={() => router.push(`/app/ofertas-escaladas/${offer.id}`)}
               >
-                <a href={offer.ad_library_url} target="_blank" rel="noreferrer">
-                  Ver na Biblioteca
-                  <ExternalLink className="w-4 h-4 ml-2" />
-                </a>
+                Ver Análise Completa
+                <ExternalLink className="w-4 h-4 ml-2" />
               </Button>
             </CardContent>
           </Card>
