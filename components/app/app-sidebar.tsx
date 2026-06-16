@@ -33,6 +33,7 @@ interface AppSidebarProps {
 const navigation = [
   { name: "Dashboard", href: "/app", icon: LayoutDashboard },
   { name: "Modulos", href: "/app/modulos", icon: BookOpen },
+  { name: "Ofertas Escaladas", href: "/app/ofertas-escaladas", icon: Sparkles },
   { name: "Workspace", href: "/app/workspace", icon: FolderKanban },
   { name: "Ghost AI", href: "/app/ghost-ai", icon: Sparkles },
   { name: "Comunidade", href: "/app/comunidade", icon: Users },

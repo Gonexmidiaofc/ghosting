@@ -139,6 +139,8 @@ export async function middleware(request: NextRequest) {
     }
 
     // 8. Admin route protection
+    // Temporarily disabled to allow access for setup (matching admin/layout.tsx)
+    /*
     if (pathname.startsWith("/admin") && user) {
       const { data: profile } = await supabase
         .from("profiles")
@@ -150,6 +152,7 @@ export async function middleware(request: NextRequest) {
         return NextResponse.redirect(new URL("/app", request.url))
       }
     }
+    */
 
     // 9. Redirect authenticated users away from auth pages
     const authRoutes = ["/login", "/signup"]

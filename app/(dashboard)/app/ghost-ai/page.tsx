@@ -1,226 +1,148 @@
 "use client"
 
-import { useState, useRef, useEffect } from "react"
+import { useEffect, useState } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Textarea } from "@/components/ui/textarea"
-import { 
-  Ghost, 
-  Send, 
-  Sparkles, 
-  Copy, 
-  RotateCcw,
-  Lightbulb,
-  Code,
-  Target,
-  FileText
-} from "lucide-react"
+import { BrainCircuit, Lock, ExternalLink, Sparkles, MessageSquare } from "lucide-react"
+import { createClient } from "@/lib/supabase/client"
+import { useRouter } from "next/navigation"
 
-interface Message {
+interface CustomAgent {
   id: string
-  role: "user" | "assistant"
-  content: string
-  timestamp: Date
+  name: string
+  description: string
+  price: number
+  icon: string
 }
 
-const quickPrompts = [
-  { icon: Target, label: "Estrategia de trafego", prompt: "Me ajude a criar uma estrategia de trafego pago para um produto digital de R$297" },
-  { icon: Code, label: "Estrutura de funil", prompt: "Qual a melhor estrutura de funil para um lancamento de infoproduto?" },
-  { icon: FileText, label: "Copy para anuncio", prompt: "Crie uma copy persuasiva para anuncio de um curso online" },
-  { icon: Lightbulb, label: "Ideias de conteudo", prompt: "Me de 10 ideias de conteudo para atrair leads qualificados no Instagram" },
-]
-
-export default function GhostAIPage() {
-  const [messages, setMessages] = useState<Message[]>([])
-  const [input, setInput] = useState("")
-  const [isLoading, setIsLoading] = useState(false)
-  const messagesEndRef = useRef<HTMLDivElement>(null)
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
-  }
+export default function GhostAIStorePage() {
+  const [agents, setAgents] = useState<CustomAgent[]>([])
+  const [unlockedAgentIds, setUnlockedAgentIds] = useState<string[]>([])
+  const [loading, setLoading] = useState(true)
+  
+  const router = useRouter()
+  const supabase = createClient()
 
   useEffect(() => {
-    scrollToBottom()
-  }, [messages])
+    loadStore()
+  }, [])
 
-  const handleSend = async (text?: string) => {
-    const messageText = text || input
-    if (!messageText.trim()) return
+  const loadStore = async () => {
+    setLoading(true)
+    
+    // 1. Get all active agents
+    const { data: agentsData } = await supabase
+      .from("custom_agents")
+      .select("id, name, description, price, icon")
+      .eq("is_active", true)
+      .order("created_at", { ascending: true })
 
-    const userMessage: Message = {
-      id: Date.now().toString(),
-      role: "user",
-      content: messageText,
-      timestamp: new Date(),
-    }
+    if (agentsData) setAgents(agentsData)
 
-    setMessages((prev) => [...prev, userMessage])
-    setInput("")
-    setIsLoading(true)
-
-    // Simulate AI response (replace with actual AI integration)
-    setTimeout(() => {
-      const aiMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        role: "assistant",
-        content: `Entendi sua pergunta sobre "${messageText.slice(0, 50)}..."\n\nComo seu assistente especializado em operacoes digitais, posso te ajudar com:\n\n1. **Estrategia**: Definir o melhor caminho para seu objetivo\n2. **Execucao**: Passo a passo pratico para implementar\n3. **Otimizacao**: Melhorias baseadas em dados\n\nQuer que eu detalhe algum desses pontos?`,
-        timestamp: new Date(),
+    // 2. Get current user's unlocked agents
+    const { data: { user } } = await supabase.auth.getUser()
+    if (user) {
+      const { data: accessData } = await supabase
+        .from("user_agent_access")
+        .select("agent_id")
+        .eq("user_id", user.id)
+        
+      if (accessData) {
+        setUnlockedAgentIds(accessData.map(a => a.agent_id))
       }
-      setMessages((prev) => [...prev, aiMessage])
-      setIsLoading(false)
-    }, 1500)
+    }
+
+    setLoading(false)
   }
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault()
-      handleSend()
+  const handleAgentClick = (agentId: string, isUnlocked: boolean, price: number) => {
+    if (isUnlocked || price === 0) {
+      router.push(`/app/ghost-ai/${agentId}`)
+    } else {
+      // Aqui abririamos o modal ou redirecionaria para o checkout
+      // Para este MVP, vamos apenas dar um alert ou abrir uma nova tab se tivermos o link
+      alert(`Para acessar este agente, o aluno deve comprar pelo checkout (Valor: R$ ${price})`)
     }
   }
 
-  const copyMessage = (content: string) => {
-    navigator.clipboard.writeText(content)
-  }
-
-  const clearChat = () => {
-    setMessages([])
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    )
   }
 
   return (
-    <div className="h-[calc(100vh-8rem)] flex flex-col">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground flex items-center gap-3">
-            <Sparkles className="w-8 h-8 text-primary" />
-            Ghost AI
-          </h1>
-          <p className="text-muted-foreground mt-1">
-            Seu assistente especializado em operacoes digitais
-          </p>
-        </div>
-        {messages.length > 0 && (
-          <Button variant="outline" size="sm" onClick={clearChat}>
-            <RotateCcw className="w-4 h-4 mr-2" />
-            Nova conversa
-          </Button>
-        )}
+    <div className="space-y-8">
+      <div>
+        <h1 className="text-3xl font-bold text-foreground flex items-center gap-2">
+          <BrainCircuit className="w-8 h-8 text-primary" />
+          Loja de Agentes de IA
+        </h1>
+        <p className="text-muted-foreground mt-1">
+          Contrate nossos agentes especialistas, treinados exclusivamente para executar tarefas específicas no seu negócio.
+        </p>
       </div>
 
-      {/* Chat Area */}
-      <Card className="flex-1 bg-card/50 flex flex-col overflow-hidden">
-        <CardContent className="flex-1 overflow-y-auto p-6 space-y-6">
-          {messages.length === 0 ? (
-            <div className="h-full flex flex-col items-center justify-center text-center">
-              <div className="w-20 h-20 bg-primary/10 rounded-3xl flex items-center justify-center mb-6">
-                <Ghost className="w-10 h-10 text-primary" />
-              </div>
-              <h2 className="text-2xl font-bold text-foreground mb-2">
-                Ola! Sou o Ghost AI
-              </h2>
-              <p className="text-muted-foreground max-w-md mb-8">
-                Estou aqui para te ajudar com estrategias de marketing, trafego pago, 
-                funis de vendas, automacoes e muito mais.
-              </p>
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        {agents.length === 0 ? (
+          <div className="col-span-full py-12 text-center text-muted-foreground bg-[#0d0d0d] border border-[#1a1a1a] rounded-lg">
+            Nenhum agente especialista disponível no momento.
+          </div>
+        ) : (
+          agents.map(agent => {
+            const isUnlocked = unlockedAgentIds.includes(agent.id)
 
-              {/* Quick Prompts */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-2xl">
-                {quickPrompts.map((prompt) => (
-                  <button
-                    key={prompt.label}
-                    onClick={() => handleSend(prompt.prompt)}
-                    className="flex items-center gap-3 p-4 rounded-xl bg-secondary/50 hover:bg-secondary text-left transition-colors"
-                  >
-                    <prompt.icon className="w-5 h-5 text-primary flex-shrink-0" />
-                    <span className="text-sm text-foreground">{prompt.label}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-          ) : (
-            <>
-              {messages.map((message) => (
-                <div
-                  key={message.id}
-                  className={`flex gap-4 ${message.role === "user" ? "justify-end" : ""}`}
-                >
-                  {message.role === "assistant" && (
-                    <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
-                      <Ghost className="w-5 h-5 text-primary" />
-                    </div>
-                  )}
-                  <div
-                    className={`
-                      max-w-[80%] rounded-2xl p-4 
-                      ${message.role === "user" 
-                        ? "bg-primary text-primary-foreground" 
-                        : "bg-secondary/50"
-                      }
-                    `}
-                  >
-                    <p className="whitespace-pre-wrap text-sm leading-relaxed">
-                      {message.content}
-                    </p>
-                    {message.role === "assistant" && (
-                      <div className="flex items-center gap-2 mt-3 pt-3 border-t border-border/50">
+            return (
+              <Card 
+                key={agent.id} 
+                className={`bg-[#0d0d0d] border-[#1a1a1a] flex flex-col relative group transition-all ${
+                  !isUnlocked ? "hover:border-primary/30" : "hover:border-emerald-500/50 cursor-pointer"
+                }`}
+                onClick={() => isUnlocked && handleAgentClick(agent.id, isUnlocked, agent.price)}
+              >
+                <CardContent className="p-6 flex-1 flex flex-col items-center text-center">
+                  <div className={`w-16 h-16 rounded-2xl flex items-center justify-center mb-4 ${
+                    isUnlocked ? "bg-emerald-500/20 text-emerald-400" : "bg-primary/10 text-primary"
+                  }`}>
+                    {isUnlocked ? <MessageSquare className="w-8 h-8" /> : <BrainCircuit className="w-8 h-8" />}
+                  </div>
+                  
+                  <h3 className="font-bold text-xl text-foreground mb-2">{agent.name}</h3>
+                  <p className="text-sm text-muted-foreground mb-6 flex-1">{agent.description}</p>
+                  
+                  <div className="w-full pt-4 border-t border-[#1a1a1a]">
+                    {isUnlocked ? (
+                      <Button className="w-full bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500 hover:text-white transition-colors border border-emerald-500/20">
+                        <MessageSquare className="w-4 h-4 mr-2" />
+                        Acessar Chat
+                      </Button>
+                    ) : (
+                      <div className="space-y-3 w-full">
+                        <div className="flex items-center justify-center gap-1">
+                          <span className="text-xs text-muted-foreground">R$</span>
+                          <span className="text-2xl font-black text-foreground">{agent.price.toFixed(2)}</span>
+                        </div>
                         <Button 
-                          variant="ghost" 
-                          size="sm"
-                          onClick={() => copyMessage(message.content)}
-                          className="h-7 px-2 text-xs"
+                          className="w-full bg-primary text-primary-foreground font-bold shadow-lg shadow-primary/20 hover:bg-primary/90"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleAgentClick(agent.id, isUnlocked, agent.price)
+                          }}
                         >
-                          <Copy className="w-3 h-3 mr-1" />
-                          Copiar
+                          <Lock className="w-4 h-4 mr-2" />
+                          Desbloquear Acesso
                         </Button>
                       </div>
                     )}
                   </div>
-                </div>
-              ))}
-              {isLoading && (
-                <div className="flex gap-4">
-                  <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
-                    <Ghost className="w-5 h-5 text-primary animate-pulse" />
-                  </div>
-                  <div className="bg-secondary/50 rounded-2xl p-4">
-                    <div className="flex gap-1">
-                      <span className="w-2 h-2 bg-primary/50 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
-                      <span className="w-2 h-2 bg-primary/50 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
-                      <span className="w-2 h-2 bg-primary/50 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
-                    </div>
-                  </div>
-                </div>
-              )}
-              <div ref={messagesEndRef} />
-            </>
-          )}
-        </CardContent>
-
-        {/* Input Area */}
-        <div className="p-4 border-t border-border">
-          <div className="flex gap-3">
-            <Textarea
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder="Pergunte algo ao Ghost AI..."
-              className="min-h-[50px] max-h-[150px] resize-none bg-secondary/50 border-0"
-              rows={1}
-            />
-            <Button 
-              onClick={() => handleSend()} 
-              disabled={!input.trim() || isLoading}
-              className="px-4"
-            >
-              <Send className="w-4 h-4" />
-            </Button>
-          </div>
-          <p className="text-xs text-muted-foreground text-center mt-2">
-            Ghost AI pode cometer erros. Verifique informacoes importantes.
-          </p>
-        </div>
-      </Card>
+                </CardContent>
+              </Card>
+            )
+          })
+        )}
+      </div>
     </div>
   )
 }

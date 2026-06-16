@@ -28,6 +28,8 @@ import {
   FileCode,
   Library,
   Bot,
+  Network,
+  Tag,
   Bell,
   Sparkles,
   Settings,
@@ -54,7 +56,10 @@ const navigationGroups = [
     items: [
       { name: "Overview", href: "/admin", icon: LayoutDashboard },
       { name: "Projetos", href: "/admin/projetos", icon: FolderKanban },
-      { name: "Ofertas", href: "/admin/ofertas", icon: Package },
+      { name: "Ofertas (Suas)", href: "/admin/ofertas", icon: Package },
+      { name: "Ofertas Escaladas", href: "/admin/ofertas-escaladas", icon: Tag },
+      { name: "Ghost AI", href: "/admin/ghost-ai", icon: Bot },
+      { name: "Segundo Cérebro", href: "/admin/segundo-cerebro", icon: Network },
       { name: "Funis", href: "/admin/funis", icon: GitBranch },
     ]
   },
