@@ -11,7 +11,8 @@ import {
   ExternalLink,
   Image as ImageIcon,
   Check,
-  X
+  X,
+  Sparkles
 } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 import {
@@ -57,6 +58,10 @@ export default function AdminOfertasEscaladas() {
   const [isFree, setIsFree] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
+  // Magic Import state
+  const [importUrl, setImportUrl] = useState("")
+  const [isImporting, setIsImporting] = useState(false)
+
   const supabase = createClient()
 
   useEffect(() => {
@@ -74,6 +79,39 @@ export default function AdminOfertasEscaladas() {
       setOffers(data)
     }
     setLoading(false)
+  }
+
+  const handleImport = async () => {
+    if (!importUrl) {
+      alert("Cole o link do Facebook Ad Library primeiro.")
+      return
+    }
+    setIsImporting(true)
+    try {
+      const res = await fetch("/api/admin/scrape-ad", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: importUrl })
+      })
+      const result = await res.json()
+      
+      if (!res.ok) {
+        throw new Error(result.error || "Erro desconhecido")
+      }
+
+      if (result.success && result.data) {
+        setTitle(result.data.title || "")
+        setCopyText(result.data.copyText || "")
+        setMediaUrl(result.data.mediaUrl || "")
+        setAdLibraryUrl(result.data.adLibraryUrl || importUrl)
+        alert("Anúncio extraído com sucesso! Revise os dados abaixo e clique em Salvar.")
+        setImportUrl("")
+      }
+    } catch (err: any) {
+      alert("Erro ao extrair anúncio: " + err.message)
+    } finally {
+      setIsImporting(false)
+    }
   }
 
   const handleCreate = async () => {
@@ -151,6 +189,35 @@ export default function AdminOfertasEscaladas() {
               <DialogTitle>Nova Oferta Escalada</DialogTitle>
             </DialogHeader>
             <div className="space-y-4 pt-4">
+              
+              {/* Importador Automático Mágico */}
+              <div className="p-4 rounded-lg border border-primary/30 bg-primary/5 space-y-3 mb-6">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-bold text-primary flex items-center">
+                    <Sparkles className="w-4 h-4 mr-2" />
+                    Importador Mágico (DSers)
+                  </h3>
+                  <span className="text-[10px] bg-emerald-500/20 text-emerald-500 px-2 py-0.5 rounded-full uppercase font-bold">Apify Conectado</span>
+                </div>
+                <p className="text-xs text-muted-foreground">Cole o link da Biblioteca de Anúncios e puxamos tudo automaticamente.</p>
+                <div className="flex gap-2">
+                  <Input 
+                    placeholder="Cole o link do Facebook Ad Library..." 
+                    className="bg-background border-primary/20 text-xs h-9"
+                    value={importUrl}
+                    onChange={(e) => setImportUrl(e.target.value)}
+                  />
+                  <Button 
+                    size="sm" 
+                    className="h-9 whitespace-nowrap bg-primary text-primary-foreground hover:bg-primary/90" 
+                    onClick={handleImport}
+                    disabled={isImporting}
+                  >
+                    {isImporting ? "Minerando..." : "Puxar Anúncio"}
+                  </Button>
+                </div>
+              </div>
+
               <div className="space-y-2">
                 <label className="text-sm font-medium">Título da Oferta</label>
                 <Input 
