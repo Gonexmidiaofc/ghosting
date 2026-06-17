@@ -100,13 +100,10 @@ export default function AdminOfertasEscaladas() {
         throw new Error(result.error || "Erro desconhecido")
       }
 
-      if (result.success && result.data) {
-        setTitle(result.data.title || "")
-        setCopyText(result.data.copyText || "")
-        setMediaUrl(result.data.mediaUrl || "")
-        setAdLibraryUrl(result.data.adLibraryUrl || importUrl)
-        alert("Anúncio extraído com sucesso! Revise os dados abaixo e clique em Salvar.")
+      if (result.success) {
+        alert(result.message || "Anúncios extraídos com sucesso!")
         setImportUrl("")
+        loadOffers() // Atualiza a tabela com os novos dados puxados
       }
     } catch (err: any) {
       alert("Erro ao extrair anúncio: " + err.message)
@@ -217,7 +214,7 @@ export default function AdminOfertasEscaladas() {
                     onClick={handleImport}
                     disabled={isImporting}
                   >
-                    {isImporting ? "Minerando..." : "Puxar Anúncio"}
+                    {isImporting ? "Extraindo e Rodando IA..." : "Extrair 3 Automáticos"}
                   </Button>
                 </div>
               </div>
