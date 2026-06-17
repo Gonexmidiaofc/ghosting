@@ -191,31 +191,25 @@ export default function AdminOfertasEscaladas() {
             </DialogHeader>
             <div className="space-y-4 pt-4">
               
-              {/* Importador Automático Mágico */}
-              <div className="p-4 rounded-lg border border-primary/30 bg-primary/5 space-y-3 mb-6">
+              {/* Chrome Extension Block */}
+              <div className="bg-[#141414] border border-primary/20 rounded-lg p-4 space-y-3 mb-4">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-bold text-primary flex items-center">
+                  <h3 className="text-sm font-semibold text-primary flex items-center">
                     <Sparkles className="w-4 h-4 mr-2" />
-                    Importador Mágico (DSers)
+                    Ghosting Ads Extractor
                   </h3>
-                  <span className="text-[10px] bg-emerald-500/20 text-emerald-500 px-2 py-0.5 rounded-full uppercase font-bold">Apify Conectado</span>
+                  <span className="text-[10px] bg-emerald-500/20 text-emerald-500 px-2 py-0.5 rounded-full uppercase font-bold">100% Grátis</span>
                 </div>
-                <p className="text-xs text-muted-foreground">Cole o link da Biblioteca de Anúncios e puxamos tudo automaticamente.</p>
-                <div className="flex gap-2">
-                  <Input 
-                    placeholder="Cole o link do Facebook Ad Library..." 
-                    className="bg-background border-primary/20 text-xs h-9"
-                    value={importUrl}
-                    onChange={(e) => setImportUrl(e.target.value)}
-                  />
-                  <Button 
-                    size="sm" 
-                    className="h-9 whitespace-nowrap bg-primary text-primary-foreground hover:bg-primary/90" 
-                    onClick={handleImport}
-                    disabled={isImporting}
+                <p className="text-xs text-muted-foreground">Baixe a nossa Extensão Oficial para extrair 3 anúncios do Facebook de forma automática e gratuita.</p>
+                <div className="flex flex-col gap-2">
+                  <a 
+                    href="/ghosting-ads-extension.zip" 
+                    download
+                    className="flex justify-center items-center h-9 w-full bg-primary text-primary-foreground text-xs font-bold rounded-md hover:bg-primary/90 transition-colors"
                   >
-                    {isImporting ? "Extraindo e Rodando IA..." : "Extrair 3 Automáticos"}
-                  </Button>
+                    Baixar Extensão (.zip)
+                  </a>
+                  <p className="text-[10px] text-muted-foreground text-center">Descompacte o arquivo e adicione em `chrome://extensions` (Modo Desenvolvedor).</p>
                 </div>
               </div>
 
