@@ -20,6 +20,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
   DialogTrigger,
 } from "@/components/ui/dialog"
 import {
@@ -187,6 +188,9 @@ export default function AdminOfertasEscaladas() {
           <DialogContent className="bg-[#0d0d0d] border-[#1a1a1a] text-foreground sm:max-w-[500px]">
             <DialogHeader>
               <DialogTitle>Nova Oferta Escalada</DialogTitle>
+              <DialogDescription className="sr-only">
+                Preencha os campos abaixo para cadastrar uma nova oferta no sistema.
+              </DialogDescription>
             </DialogHeader>
             <div className="space-y-4 pt-4">
               
